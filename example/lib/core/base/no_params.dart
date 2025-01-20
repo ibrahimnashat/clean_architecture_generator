@@ -1,3 +1,0 @@
-///[NoParams]
-///[Implementation]
-class NoParams {}

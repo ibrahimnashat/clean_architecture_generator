@@ -1,20 +1,20 @@
 const flowState = 'FlowState';
 
-const loadingState = 'const LoadingState(type: LoadingRendererType.popup)';
+const loadingState = 'state.copyWith(type: StateType.loadingPopUp)';
 
-const contentState = 'const ContentState()';
+const contentState = 'state.copyWith(type: StateType.none)';
 
 const successState =
-    'SuccessState(type: SuccessRendererType.none,message: data.message,)';
+    'state.copyWith(type: StateType.success,message: data.message,)';
 
 const errorState =
-    'ErrorState(type: ErrorRendererType.toast,message: data.message,)';
+    'state.copyWith(type: StateType.errorPopUp,message: data.message,)';
 
 const errorFailureState =
-    'ErrorState(type: ErrorRendererType.toast,message: failure.message,)';
+    'state.copyWith(type: StateType.error,message: failure.message,)';
 
 const successStateTest =
-    'SuccessState(type: SuccessRendererType.none,message: "message",)';
+    'state.copyWith(type: StateType.success,message: "message",)';
 
 const errorStateTest =
-    'ErrorState(type: ErrorRendererType.toast,message: "message",)';
+    'state.copyWith(type: StateType.errorPopUp,message: "message",)';

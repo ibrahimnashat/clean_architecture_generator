@@ -32,7 +32,7 @@ class Imports {
   }) {
     final names = Names();
     String data = addAndCheck('', "import 'dart:io';\n");
-    data = addAndCheck(data, "import 'package:eitherx/eitherx.dart';\n");
+    data = addAndCheck(data, "import 'package:dartz/dartz.dart';\n");
     data = addAndCheck(data, "import 'package:mwidgets/mwidgets.dart';\n");
     final baseResponse = importName('base_response.dart');
     final noParams = importName('no_params.dart');
@@ -55,8 +55,9 @@ class Imports {
       data = addAndCheck(data, "import 'package:flutter/material.dart';\n");
       data = addAndCheck(
           data, "import 'package:flutter_bloc/flutter_bloc.dart';\n");
-      data = addAndCheck(
-          data, "import 'package:request_builder/request_builder.dart';\n");
+
+      final flowBuilder = importName('flow_builder.dart');
+      if (flowBuilder != null) data = addAndCheck(data, flowBuilder);
     }
     if (isPaging) {
       data = addAndCheck(
