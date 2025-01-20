@@ -1,3 +1,5 @@
+const initial = 'FlowState()';
+
 const flowState = 'FlowState';
 
 const loadingState = 'state.copyWith(type: StateType.loadingPopUp)';

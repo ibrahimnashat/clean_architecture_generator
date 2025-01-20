@@ -260,7 +260,7 @@ class CubitTestGenerator
                   "         cubit.set${names.firstUpper(fun.name)}(${methodFormat.initData(fun.type, fun.name)});");
               cubit.writeln("       },");
               cubit.writeln("       expect: () => <$flowState>[");
-              cubit.writeln("         $contentState,");
+              cubit.writeln("         $initial,");
               cubit.writeln("       ],");
               cubit.writeln("     );\n");
             }

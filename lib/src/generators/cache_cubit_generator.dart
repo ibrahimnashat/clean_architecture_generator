@@ -70,7 +70,7 @@ class CacheCubitGenerator
           getCacheCubit.writeln('$responseType? $varName;');
         }
         getCacheCubit.writeln(
-            '$cacheCubitType(this._$cacheUseCaseName) : super($contentState);');
+            '$cacheCubitType(this._$cacheUseCaseName) : super($initial);');
         getCacheCubit.writeln('void execute() {');
         getCacheCubit.writeln('emit($loadingState);');
         getCacheCubit.writeln('final res =  _$cacheUseCaseName.execute();');

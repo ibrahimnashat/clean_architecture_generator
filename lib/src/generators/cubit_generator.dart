@@ -109,7 +109,7 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
             }
           }
 
-          cubit.writeln(') : super($contentState);\n');
+          cubit.writeln(') : super($initial);\n');
 
           for (var useCase in useCases) {
             final useCaseType = names.useCaseType(useCase.name);

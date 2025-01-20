@@ -85,7 +85,7 @@ class PagingCubitGenerator
             cubit.writeln('this.${controller.name},');
           }
           if (hasParams) cubit.writeln('this.request,');
-          cubit.writeln(') : super($contentState);');
+          cubit.writeln(') : super($initial);');
           cubit.writeln('void init() {');
           cubit.writeln(
               'pagewiseController = PagewiseLoadController<$baseModelType>(');
