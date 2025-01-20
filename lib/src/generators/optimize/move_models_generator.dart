@@ -24,7 +24,7 @@ class MoveModelsGenerator
     if (dir.existsSync()) {
       final models = Imports.filesInDir("$currentPath/models");
       for (var model in models) {
-        final filename = model.split('\\').last;
+        final filename = model.split('\\').last.split('/').last;
         if (filename.contains(".dart")) {
           FileManager.move(filename, path, "$currentPath/models");
         }

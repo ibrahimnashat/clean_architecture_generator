@@ -88,6 +88,9 @@ class CacheUseCaseTestGenerator
           usecase.writeln("(index) =>");
           usecase.writeln("$modelType.fromJson($decode),");
           usecase.writeln(");");
+        } else if (type.contains('BaseResponse<dynamic>') ||
+            type == 'BaseResponse') {
+          usecase.writeln("data = null,);");
         } else {
           usecase.writeln("data = $modelType.fromJson($decode);");
         }

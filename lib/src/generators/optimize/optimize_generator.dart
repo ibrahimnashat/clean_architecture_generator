@@ -14,40 +14,9 @@ class OptimizeGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    final path = "/lib/core";
+    final path = "/lib/core/base";
     final visitor = ModelVisitor();
     element.visitChildren(visitor);
-
-    ///[kPrint]
-    final kPrint = StringBuffer();
-    kPrint.writeln(Imports.create(
-      libs: [
-        "import 'dart:convert';",
-        "import 'dart:developer';",
-        "import 'package:flutter/foundation.dart';",
-      ],
-    ));
-    kPrint.writeln('///[kPrint]');
-    kPrint.writeln('///[Implementation]');
-    kPrint.writeln("void kPrint(dynamic data) {");
-    kPrint.writeln("if (kDebugMode) {");
-    kPrint.writeln("_pr(data.toString());");
-    kPrint.writeln("} else if (data is Map) {");
-    kPrint.writeln("_pr(jsonEncode(data));");
-    kPrint.writeln("} else {");
-    kPrint.writeln("_pr(data.toString());");
-    kPrint.writeln("}");
-    kPrint.writeln("}\n\n");
-    kPrint.writeln("void _pr(String data) {");
-    kPrint.writeln("if (data.length > 500) {");
-    kPrint.writeln("log(data);");
-    kPrint.writeln("} else {");
-    kPrint.writeln("print(data);");
-    kPrint.writeln("}");
-    kPrint.writeln("log(StackTrace.current.toString().split('\\n')[2]);");
-    kPrint.writeln("}");
-
-    FileManager.searchAndAddFile('$path/print', kPrint.toString());
 
     ///[Network]
     final network = StringBuffer();
@@ -71,39 +40,36 @@ class OptimizeGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
         "Future<bool> get isConnected => internetConnectionChecker.hasConnection;");
     network.writeln("}");
 
-    FileManager.searchAndAddFile('$path/network', network.toString());
+    FileManager.save('$path/network', network.toString());
 
     ///[BaseUseCase]
     final baseUseCase = StringBuffer();
     baseUseCase.writeln("import 'package:eitherx/eitherx.dart';");
     baseUseCase.writeln('///[BaseUseCase]');
     baseUseCase.writeln('///[Implementation]');
-    baseUseCase.writeln("abstract class BaseUseCase<RES, POS> {");
-    baseUseCase.writeln("RES execute({POS? request});");
+    baseUseCase.writeln("abstract class BaseUseCase<In, Out> {");
+    baseUseCase.writeln("Out execute({In? request});");
     baseUseCase.writeln("}");
 
-    FileManager.searchAndAddFile('$path/base_use_case', baseUseCase.toString());
+    FileManager.save('$path/base_use_case', baseUseCase.toString());
 
-    ///[Failure]
-    final failure = StringBuffer();
-    failure.writeln('///[Failure]');
-    failure.writeln('///[Implementation]');
-    failure.writeln("class Failure {");
-    failure.writeln("int code; // 200, 201, 400, 303..500 and so on");
-    failure.writeln("String message; // error , success\n");
-    failure.writeln("Failure(this.code, this.message);");
-    failure.writeln("}");
+    ///[NoParams]
+    final noParams = StringBuffer();
+    noParams.writeln('///[NoParams]');
+    noParams.writeln('///[Implementation]');
+    noParams.writeln("class NoParams {}");
 
-    FileManager.searchAndAddFile('$path/failure', failure.toString());
+    FileManager.save('$path/no_params', noParams.toString());
 
     ///[SafeApi]
     final safeApi = StringBuffer();
     safeApi.writeln(Imports.create(
-      imports: ['Failure', 'print', 'network'],
+      imports: ['network'],
       libs: [
-        "import 'dart:developer';",
-        "import 'package:eitherx/eitherx.dart';",
-        "import 'package:injectable/injectable.dart';",
+        "import 'dart:developer';\n",
+        "import 'package:eitherx/eitherx.dart';\n",
+        "import 'package:injectable/injectable.dart';\n",
+        "import 'package:mwidgets/mwidgets.dart';\n",
       ],
     ));
     safeApi.writeln('///[SafeApi]');
@@ -130,102 +96,7 @@ class OptimizeGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
     safeApi.writeln('}');
     safeApi.writeln('}');
 
-    FileManager.searchAndAddFile(
-        '$path/safe_request_handler', safeApi.toString());
-
-    ///[StateRendererType]
-    final stateRenderer = StringBuffer();
-    stateRenderer.writeln("enum StateRendererType {");
-    stateRenderer.writeln("popUpLoading,");
-    stateRenderer.writeln("popUpError,");
-    stateRenderer.writeln("toastError,");
-    stateRenderer.writeln("toastSuccess,");
-    stateRenderer.writeln("fullScreenLoading,");
-    stateRenderer.writeln("fullScreenSuccess,");
-    stateRenderer.writeln("fullScreenError,");
-    stateRenderer.writeln("fullScreenEmpty,");
-    stateRenderer.writeln("contentState");
-    stateRenderer.writeln("}");
-
-    FileManager.searchAndAddFile(
-        '$path/stateRenderer', stateRenderer.toString());
-
-    ///[States]
-    final states = StringBuffer();
-    states.writeln(Imports.create(
-      imports: ["StateRenderer"],
-      libs: ["import 'package:equatable/equatable.dart';"],
-    ));
-    states.writeln("abstract class FlowState extends Equatable {");
-    states.writeln("StateRendererType getStateRendererType();");
-    states.writeln("String getMessage();");
-    states.writeln("}\n\n");
-
-    states.writeln("class InitialState extends FlowState {");
-    states.writeln("@override");
-    states.writeln("String getMessage() {");
-    states.writeln("return '';");
-    states.writeln("}");
-    states.writeln("@override");
-    states.writeln(
-        "StateRendererType getStateRendererType() => StateRendererType.contentState;");
-    states.writeln("@override");
-    states.writeln("List<Object?> get props => [];");
-    states.writeln("}\n\n");
-
-    for (var state in ["Loading", "Error", "Empty"]) {
-      states.writeln("class ${state}State extends FlowState {");
-      states.writeln("final StateRendererType type;");
-      states.writeln("final String? message;");
-      states.writeln("${state}State({");
-      states.writeln("required this.type,");
-      states.writeln("this.message,");
-      states.writeln("});");
-      states.writeln("@override");
-      states.writeln("String getMessage() => message ?? '';");
-      states.writeln("@override");
-      states.writeln("StateRendererType getStateRendererType() => type;");
-      states.writeln("@override");
-      states.writeln("List<Object?> get props => [type, message];");
-      states.writeln("}\n\n");
-    }
-
-    states.writeln("class SuccessState<T> extends FlowState {");
-    states.writeln("final StateRendererType type;");
-    states.writeln("final String message;");
-    states.writeln("final T? data;");
-    states.writeln("SuccessState({");
-    states.writeln("required this.type,");
-    states.writeln("required this.message,");
-    states.writeln("this.data,");
-    states.writeln("});");
-    states.writeln("@override");
-    states.writeln("String getMessage() => message ?? '';");
-    states.writeln("@override");
-    states.writeln("StateRendererType getStateRendererType() => type;");
-    states.writeln("@override");
-    states.writeln("List<Object?> get props => [type, message];");
-    states.writeln("}\n\n");
-
-    states.writeln("class ContentState<T> extends FlowState {");
-    states.writeln("final StateRendererType? type;");
-    states.writeln("final String? message;");
-    states.writeln("final T? data;");
-    states.writeln("ContentState({");
-    states.writeln("this.type,");
-    states.writeln("this.message,");
-    states.writeln("this.data,");
-    states.writeln("});");
-    states.writeln("@override");
-    states.writeln("String getMessage() => message ?? '';");
-    states.writeln("@override");
-    states.writeln(
-        "StateRendererType getStateRendererType() => StateRendererType.contentState;");
-    states.writeln("@override");
-    states.writeln("List<Object?> get props => [data];");
-    states.writeln("}\n\n");
-
-    FileManager.searchAndAddFile('$path/states', states.toString());
+    FileManager.save('$path/safe_request_handler', safeApi.toString());
 
     ///[BaseResponse]
     final baseResponse = StringBuffer();
@@ -249,44 +120,8 @@ class OptimizeGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
     baseResponse.writeln("_\$BaseResponseFromJson(json, fromJsonT);");
     baseResponse.writeln("}\n\n");
 
-    FileManager.searchAndAddFile('$path/BaseResponse', baseResponse.toString());
+    FileManager.save('$path/BaseResponse', baseResponse.toString());
 
-    ///[Fold]
-    final fold = StringBuffer();
-    fold.writeln(Imports.create(
-      imports: ["Failure", "print"],
-      libs: [
-        "import 'dart:developer';",
-        "import 'package:eitherx/eitherx.dart';"
-      ],
-    ));
-
-    fold.writeln("extension OnEither<T> on Either<Failure, T> {");
-    fold.writeln("dynamic right(Function(T data) callBack) {");
-    fold.writeln("return fold(");
-    fold.writeln("(failure) {");
-    fold.writeln("kPrint('Error! \$failure');");
-    fold.writeln(" },");
-    fold.writeln("(data) {");
-    fold.writeln("callBack(data);");
-    fold.writeln("return data;");
-    fold.writeln("},");
-    fold.writeln(");");
-    fold.writeln("}");
-    fold.writeln("dynamic left(Function(Failure failure) callBack) {");
-    fold.writeln("return fold(");
-    fold.writeln("(failure) {");
-    fold.writeln("kPrint(failure.code);");
-    fold.writeln("kPrint(failure.message);");
-    fold.writeln("callBack(failure);");
-    fold.writeln("return failure;");
-    fold.writeln("},");
-    fold.writeln("(data) {},");
-    fold.writeln(");");
-    fold.writeln("}");
-    fold.writeln("}");
-
-    FileManager.searchAndAddFile('$path/fold', fold.toString());
     return '';
   }
 }

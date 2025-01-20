@@ -3,6 +3,7 @@ import 'clean_method.dart';
 class UseCaseModel {
   final String type;
   final String name;
+  final String cubitName;
   final String endPoint;
   final MethodType methodType;
   final RequestType requestType;
@@ -34,6 +35,7 @@ class UseCaseModel {
     required this.textControllers,
     required this.emitSets,
     required this.requestParameters,
+    required this.cubitName,
     this.methodType = MethodType.POST,
     this.requestType = RequestType.Fields,
   });
@@ -42,9 +44,11 @@ class UseCaseModel {
 class CommendType {
   final String type;
   final String name;
+  final bool isRequired;
 
   const CommendType({
     required this.name,
     required this.type,
+    this.isRequired = true,
   });
 }

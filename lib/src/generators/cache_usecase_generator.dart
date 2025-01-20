@@ -68,7 +68,7 @@ class CacheUseCaseGenerator
         cacheUseCase.writeln('///[Implementation]');
         cacheUseCase.writeln('@injectable');
         cacheUseCase.writeln(
-            'class $cacheUseCaseType implements BaseUseCase<Future<Either<Failure, Unit>>,$responseType> {');
+            'class $cacheUseCaseType implements BaseUseCase<$responseType, Future<Either<Failure, Unit>>> {');
         cacheUseCase.writeln('final $repositoryType repository;');
         cacheUseCase.writeln('const $cacheUseCaseType(');
         cacheUseCase.writeln('this.repository,');
@@ -106,7 +106,7 @@ class CacheUseCaseGenerator
         getCacheUseCase.writeln('///[Implementation]');
         getCacheUseCase.writeln('@injectable');
         getCacheUseCase.writeln(
-            'class $getCacheUseCaseType implements BaseUseCase<Either<Failure, $responseTypeEntity>, Void?>{');
+            'class $getCacheUseCaseType implements BaseUseCase<Void?, Either<Failure, $responseTypeEntity>>{');
         getCacheUseCase.writeln('final $repositoryType repository;');
         getCacheUseCase.writeln('const $getCacheUseCaseType(');
         getCacheUseCase.writeln('this.repository,');

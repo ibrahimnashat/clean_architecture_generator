@@ -48,6 +48,10 @@ dependencies:
   internet_connection_checker: ^1.0.0+1
 
 
+  mwidgets: ^0.2.1
+  request_builder:
+    git: https://github.com/AhmedAttia3/request_builder.git
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -24,6 +24,7 @@ class LocalDataSourceGenerator
     final visitor = ModelVisitor();
     final methodFormat = MethodFormat();
     element.visitChildren(visitor);
+    List<String> methods = [];
     bool hasLocalDataSource = false;
     for (var method in visitor.useCases) {
       if (method.isCache) {
@@ -67,6 +68,8 @@ class LocalDataSourceGenerator
               'Future<Either<Failure, Unit>> $cacheMethodName({required $responseType data,});');
           dataSource
               .writeln('Either<Failure, $responseType> $getCacheMethodName();');
+          methods.add(cacheMethodName);
+          methods.add(getCacheMethodName);
         }
       }
 
@@ -76,6 +79,7 @@ class LocalDataSourceGenerator
         '$path/$localDataSourceType',
         dataSource.toString(),
         allowUpdates: true,
+        methods: methods,
       );
 
       ///[Imports]
@@ -170,6 +174,7 @@ class LocalDataSourceGenerator
         '$path/$localDataSourceImplName',
         dataSourceImpl.toString(),
         allowUpdates: true,
+        methods: methods,
       );
 
       dataSource.writeln(dataSourceImpl);

@@ -29,7 +29,7 @@ class ModelsGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
     if (dir.existsSync()) {
       final files = dir.listSync();
       for (var file in files) {
-        String filename = file.path.split('\\').last;
+        String filename = file.path.split('\\').last.split('/').last;
         if (filename.contains(".json")) {
           filename = modelType(filename);
           Map<String, dynamic> data =
@@ -42,8 +42,8 @@ class ModelsGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
   }
 
   String modelType(String filename) {
-    filename = names.firstUpper(
-        "${filename.replaceFirst("model", "").replaceFirst(".json", "")}Model");
+    filename = names.underscoreToCamelCase(names.firstUpper(
+        "${filename.replaceFirst("model", "").replaceFirst(".json", "")}Model"));
 
     return filename;
   }

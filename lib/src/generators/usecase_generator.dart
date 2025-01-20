@@ -18,79 +18,83 @@ class UseCaseGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    final basePath = FileManager.getDirectories(buildStep.inputId.path);
-    final path = "$basePath/domain/use-cases";
     final visitor = ModelVisitor();
-    final methodFormat = MethodFormat();
     element.visitChildren(visitor);
 
-    final repositoryType = visitor.repository;
+    if (!visitor.isCacheOnly) {
+      final basePath = FileManager.getDirectories(buildStep.inputId.path);
+      final path = "$basePath/domain/use-cases";
+      final methodFormat = MethodFormat();
 
-    List<String> imports = [];
-    for (var method in visitor.useCases) {
-      final returnType = methodFormat.returnTypeEntity(method.type);
-      final type = methodFormat.baseModelType(returnType);
-      imports.add(type);
-    }
+      final repositoryType = visitor.repository;
 
-    ///[UseCase]
-    final classBuffer = StringBuffer();
-    for (var method in visitor.useCases) {
-      final useCase = StringBuffer();
-      final returnType = methodFormat.returnTypeEntity(method.type);
-      final type = methodFormat.responseType(returnType);
-      final noParams = !method.hasRequest;
-      final useCaseType = names.useCaseType(method.name);
-      final requestType = noParams
-          ? method.parameters.isNotEmpty
-              ? "${method.parameters.first.type}"
-              : 'Void'
-          : names.requestType(method.name);
-      final methodName = names.firstLower(method.name);
-      useCase.writeln('///[Implementation]');
-
-      ///[Imports]
-      useCase.writeln(Imports.create(
-        imports: [
-          repositoryType,
-          noParams ? "" : requestType,
-          ...imports,
-        ],
-        isUseCase: noParams,
-      ));
-      useCase.writeln('///[$useCaseType]');
-      useCase.writeln('///[Implementation]');
-      useCase.writeln('@injectable');
-      useCase.writeln(
-          'class $useCaseType implements BaseUseCase<Future<Either<Failure, $returnType>>,$requestType>{');
-      useCase.writeln('final $repositoryType repository;');
-      useCase.writeln('const $useCaseType(');
-      useCase.writeln('this.repository,');
-      useCase.writeln(');\n');
-      useCase.writeln('@override');
-      useCase.writeln(
-          'Future<Either<Failure, $returnType>> execute({$requestType? request,}) async {');
-      useCase.writeln('return await repository.$methodName');
-      if (method.requestType == RequestType.Fields && method.hasRequest) {
-        useCase
-            .writeln('(${methodFormat.requestParameters(method.parameters)});');
-      } else if (method.requestType == RequestType.Body) {
-        useCase.writeln('(request : request!);');
-      } else if (method.parameters.length == 1) {
-        useCase.writeln('(${method.parameters.first.name} : request!);');
-      } else {
-        useCase.writeln('();');
+      List<String> imports = [];
+      for (var method in visitor.useCases) {
+        final returnType = methodFormat.returnTypeEntity(method.type);
+        final type = methodFormat.baseModelType(returnType);
+        imports.add(type);
       }
-      useCase.writeln('}\n');
-      useCase.writeln('}\n');
 
-      FileManager.save(
-        '$path/$useCaseType',
-        useCase.toString(),
-        allowUpdates: true,
-      );
-      classBuffer.write(useCase);
+      ///[UseCase]
+      final classBuffer = StringBuffer();
+      for (var method in visitor.useCases) {
+        final useCase = StringBuffer();
+        final returnType = methodFormat.returnTypeEntity(method.type);
+        final type = methodFormat.responseType(returnType);
+        final noParams = !method.hasRequest;
+        final useCaseType = names.useCaseType(method.name);
+        final requestType = noParams
+            ? method.parameters.isNotEmpty
+                ? "${method.parameters.first.type}"
+                : 'NoParams'
+            : names.requestType(method.name);
+        final methodName = names.firstLower(method.name);
+        useCase.writeln('///[Implementation]');
+
+        ///[Imports]
+        useCase.writeln(Imports.create(
+          imports: [
+            repositoryType,
+            noParams ? "" : requestType,
+            ...imports,
+          ],
+          isUseCase: noParams,
+        ));
+        useCase.writeln('///[$useCaseType]');
+        useCase.writeln('///[Implementation]');
+        useCase.writeln('@injectable');
+        useCase.writeln(
+            'class $useCaseType implements BaseUseCase<$requestType,Future<Either<Failure, $returnType>>>{');
+        useCase.writeln('final $repositoryType repository;');
+        useCase.writeln('const $useCaseType(');
+        useCase.writeln('this.repository,');
+        useCase.writeln(');\n');
+        useCase.writeln('@override');
+        useCase.writeln(
+            'Future<Either<Failure, $returnType>> execute({$requestType? request,}) async {');
+        useCase.writeln('return await repository.$methodName');
+        if (method.parameters.length == 1) {
+          useCase.writeln('(${method.parameters.first.name} : request!);');
+        } else if (method.requestType == RequestType.Fields &&
+            !method.hasRequest) {
+          useCase.writeln(
+              '(${methodFormat.requestParameters(method.parameters)});');
+        } else if (method.requestType == RequestType.Body ||
+            method.hasRequest) {
+          useCase.writeln('(request : request!);');
+        } else {
+          useCase.writeln('();');
+        }
+        useCase.writeln('}\n}\n');
+
+        FileManager.save(
+          '$path/$useCaseType',
+          useCase.toString(),
+          allowUpdates: true,
+        );
+        classBuffer.write(useCase);
+      }
     }
-    return classBuffer.toString();
+    return '';
   }
 }

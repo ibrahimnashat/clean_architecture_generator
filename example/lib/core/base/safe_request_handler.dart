@@ -1,8 +1,7 @@
 import 'package:eitherx/eitherx.dart';
-import 'package:example/core/failure.dart';
-import 'package:example/core/network.dart';
-import 'package:example/core/print.dart';
+import 'package:example/core/base/network.dart';
 import 'package:injectable/injectable.dart';
+import 'package:mwidgets/mwidgets.dart';
 
 ///[SafeApi]
 ///[Implementation]

@@ -4,6 +4,7 @@ import 'package:clean_architecture_generator/formatter/method_format.dart';
 import 'package:clean_architecture_generator/formatter/names.dart';
 import 'package:clean_architecture_generator/src/annotations.dart';
 import 'package:clean_architecture_generator/src/file_manager.dart';
+import 'package:clean_architecture_generator/src/generators/cubit_states.dart';
 import 'package:clean_architecture_generator/src/imports_file.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -44,7 +45,7 @@ class CacheCubitGenerator
       ///[get cache]
       if (method.isCache) {
         final getCacheCubit = StringBuffer();
-        final cacheCubitType = names.getCacheCubitType(method.name);
+        final cacheCubitType = names.getCacheCubitType(method.cubitName);
         final cacheUseCaseName =
             names.useCaseName(names.getCacheName(method.name));
         final cacheUseCaseType =
@@ -52,12 +53,16 @@ class CacheCubitGenerator
 
         ///[Imports]
         getCacheCubit.writeln(Imports.create(
-          imports: [requestType, cacheUseCaseType, ...imports],
+          imports: [
+            requestType,
+            cacheUseCaseType,
+            ...imports,
+          ],
           isCubit: true,
         ));
         getCacheCubit.writeln('@injectable');
         getCacheCubit
-            .writeln('class $cacheCubitType extends Cubit<FlowState> {');
+            .writeln('class $cacheCubitType extends Cubit<$flowState> {');
         getCacheCubit.writeln('final $cacheUseCaseType _$cacheUseCaseName;');
         if (responseType.contains('List')) {
           getCacheCubit.writeln('$responseType $varName = [];');
@@ -65,20 +70,16 @@ class CacheCubitGenerator
           getCacheCubit.writeln('$responseType? $varName;');
         }
         getCacheCubit.writeln(
-            '$cacheCubitType(this._$cacheUseCaseName) : super(FlowState());');
+            '$cacheCubitType(this._$cacheUseCaseName) : super($contentState);');
         getCacheCubit.writeln('void execute() {');
-        getCacheCubit
-            .writeln('emit(state.copyWith(type: StateType.loadingPopUp));');
+        getCacheCubit.writeln('emit($loadingState);');
         getCacheCubit.writeln('final res =  _$cacheUseCaseName.execute();');
         getCacheCubit.writeln('res.right((data) {');
         getCacheCubit.writeln('$varName = data;');
-        getCacheCubit.writeln('emit(ContentState());');
+        getCacheCubit.writeln('emit($contentState);');
         getCacheCubit.writeln('});');
         getCacheCubit.writeln('res.left((failure) {');
-        getCacheCubit.writeln('emit(state.copyWith(');
-        getCacheCubit.writeln('type: StateType.errorPopUp,');
-        getCacheCubit.writeln('message: failure.message,');
-        getCacheCubit.writeln('));');
+        getCacheCubit.writeln('emit($errorFailureState);');
         getCacheCubit.writeln('});');
         getCacheCubit.writeln('}');
         getCacheCubit.writeln('}');
@@ -86,7 +87,6 @@ class CacheCubitGenerator
         FileManager.save(
           '$path/$cacheCubitType',
           getCacheCubit.toString(),
-          allowUpdates: true,
         );
         cubits.writeln(getCacheCubit);
       }

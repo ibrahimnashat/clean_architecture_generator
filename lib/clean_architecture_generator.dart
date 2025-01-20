@@ -1,6 +1,8 @@
 library clean_architecture_generator;
 
 import 'package:build/build.dart';
+import 'package:clean_architecture_generator/src/generators/paging_cubit_generator.dart';
+import 'package:clean_architecture_generator/src/generators/test/paging_cubit_test_generator.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'src/generators/cache_cubit_generator.dart';
@@ -56,7 +58,9 @@ Builder generateCleanArchitecture(BuilderOptions options) => SharedPartBuilder(
 
         ///[Cubit]
         CubitGenerator(),
+        PagingCubitGenerator(),
         CubitTestGenerator(),
+        PagingCubitTestGenerator(),
 
         ///[CacheUseCase]
         CacheUseCaseGenerator(),

@@ -2,7 +2,9 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:clean_architecture_generator/formatter/names.dart';
+import 'package:clean_architecture_generator/src/check_update.dart';
 import 'package:clean_architecture_generator/src/imports_file.dart';
+import 'package:clean_architecture_generator/src/utilities/functions.dart';
 
 class FileManager {
   static Names names = Names();
@@ -12,12 +14,14 @@ class FileManager {
     String content, {
     String extension = 'dart',
     bool allowUpdates = false,
+    List<String> methods = const [],
   }) {
     _saveOrUpdate(
       fileName,
       content,
       allowUpdates: allowUpdates,
       extension: extension,
+      methods: methods,
     );
   }
 
@@ -66,7 +70,7 @@ class FileManager {
 
     final file = File(path);
     if (!file.existsSync() || allowUpdates) {
-      file.writeAsStringSync(content);
+      file.writeAsStringSync(content.formatDartCode());
     }
   }
 
@@ -107,18 +111,26 @@ class FileManager {
     String content, {
     bool allowUpdates = false,
     String extension = 'dart',
+    List<String> methods = const [],
   }) {
     String? import = search(path);
     if (import == null) {
       createDirAndFile(
         path,
-        content,
+        content.formatDartCode(),
         allowUpdates: allowUpdates,
         extension: extension,
       );
     } else {
       final file = File(import);
-      if (allowUpdates) file.writeAsStringSync(content);
+      if (allowUpdates) {
+        content = CheckUpdate.fileContent(
+          content: content,
+          path: import,
+          methods: methods,
+        );
+        file.writeAsStringSync(content.formatDartCode());
+      }
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:clean_architecture_generator/clean_architecture_generator.dart';
 import 'package:clean_architecture_generator/src/models/usecase_model.dart';
 
 class MethodFormat {
@@ -6,7 +7,8 @@ class MethodFormat {
   String parameters(List<CommendType> parameters) {
     String data = '{';
     for (var para in parameters) {
-      data += 'required ${para.type.toString()} ${para.name.toString()},';
+      data +=
+          '${para.isRequired ? "required ${para.type.toString()}" : "${para.type.toString()}?"}  ${para.name.toString()},';
     }
     if (data == '{') {
       return '';
@@ -82,7 +84,24 @@ class MethodFormat {
     } else if (type == 'num') {
       return 0.0;
     } else if (type.contains("List")) {
-      return [];
+      return "const []";
+    } else if (type == "File") {
+      return "File('')";
     }
+  }
+
+  String dataType(ParamDataType type) {
+    if (type == ParamDataType.listDouble) {
+      return 'List<double>';
+    } else if (type == ParamDataType.listInt) {
+      return 'List<int>';
+    } else if (type == ParamDataType.listString) {
+      return 'List<String>';
+    } else if (type == ParamDataType.listFile) {
+      return 'List<File>';
+    } else if (type == ParamDataType.File) {
+      return 'File';
+    }
+    return type.name;
   }
 }

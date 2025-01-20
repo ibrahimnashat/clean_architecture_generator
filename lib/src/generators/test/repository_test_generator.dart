@@ -50,9 +50,10 @@ class RepositoryTestGenerator
       }
     }
 
+    String remoteDataSourceType = '';
     final localDataSourceType = visitor.localDataSource;
     final localDataSourceName = names.localDataSourceName(localDataSourceType);
-    final remoteDataSourceType = visitor.remoteDataSource;
+    if (!visitor.isCacheOnly) remoteDataSourceType = visitor.remoteDataSource;
     final repositoryType = visitor.repository;
     final repositoryImplementType = names.ImplType(repositoryType);
     final fileName = "${names.camelCaseToUnderscore(repositoryType)}_test";
@@ -61,42 +62,49 @@ class RepositoryTestGenerator
     repository.writeln(Imports.create(
       imports: [
         localDataSourceType,
-        remoteDataSourceType,
+        visitor.isCacheOnly ? "" : remoteDataSourceType,
         '${repositoryType}Impl',
         repositoryType,
         'base_response',
-        'Failure',
         ...imports,
+      ],
+      libs: [
+        "import 'package:mwidgets/mwidgets.dart';",
       ],
       isTest: true,
     ));
     repository.writeln("import '$fileName.mocks.dart';");
     repository.writeln('@GenerateNiceMocks([');
-    repository.writeln('MockSpec<$remoteDataSourceType>(),');
+    if (!visitor.isCacheOnly)
+      repository.writeln('MockSpec<$remoteDataSourceType>(),');
     if (hasCache) repository.writeln('MockSpec<$localDataSourceType>(),');
     repository.writeln('])');
     repository.writeln('void main() {');
-    repository.writeln('late $remoteDataSourceType dataSource;');
+    if (!visitor.isCacheOnly)
+      repository.writeln('late $remoteDataSourceType dataSource;');
     repository.writeln('late $repositoryType repository;');
     repository.writeln('late Failure failure;');
-    repository.writeln('late $localDataSourceType $localDataSourceName;');
+    if (hasCache)
+      repository.writeln('late $localDataSourceType $localDataSourceName;');
 
     for (var method in visitor.useCases) {
       final methodName = method.name;
       final type = methodFormat.returnType(method.type);
-      if (!repository
-          .toString()
-          .contains('late $type ${methodName}Response;')) {
-        repository.writeln('late $type ${methodName}Response;');
-      }
-      if (method.hasRequest) {
-        final requestName = names.requestName(method.name);
-        final requestType = names.requestType(method.name);
-        repository.writeln('late $requestType $requestName;');
+      if (!visitor.isCacheOnly) {
         if (!repository
             .toString()
-            .contains('late $requestType $requestName;')) {
+            .contains('late $type ${methodName}Response;')) {
+          repository.writeln('late $type ${methodName}Response;');
+        }
+        if (method.hasRequest) {
+          final requestName = names.requestName(method.name);
+          final requestType = names.requestType(method.name);
           repository.writeln('late $requestType $requestName;');
+          if (!repository
+              .toString()
+              .contains('late $requestType $requestName;')) {
+            repository.writeln('late $requestType $requestName;');
+          }
         }
       }
       if (method.isCache) {
@@ -114,9 +122,10 @@ class RepositoryTestGenerator
     if (hasCache) {
       repository.writeln('$localDataSourceName = Mock$localDataSourceType();');
     }
-    repository.writeln('dataSource = Mock$remoteDataSourceType();');
+    if (!visitor.isCacheOnly)
+      repository.writeln('dataSource = Mock$remoteDataSourceType();');
     repository.writeln('repository = $repositoryImplementType(');
-    repository.writeln('dataSource,');
+    if (!visitor.isCacheOnly) repository.writeln('dataSource,');
     if (hasCache) repository.writeln('$localDataSourceName,');
     repository.writeln(');');
 
@@ -125,36 +134,39 @@ class RepositoryTestGenerator
       final type = methodFormat.returnType(method.type);
       final modelType = names.ModelType(type);
       final varType = names.modelRuntimeType(modelType);
-      repository.writeln("///[${names.firstUpper(methodName)}]");
-      repository.writeln('${methodName}Response = $type(');
-      repository.writeln("message: 'message',");
-      repository.writeln("success: true,");
-      if (varType == 'int' ||
-          varType == 'double' ||
-          varType == 'num' ||
-          varType == 'String' ||
-          varType == 'Map' ||
-          varType == 'bool') {
-        repository
-            .writeln("data: ${methodFormat.initData(varType, 'name')},);");
-      } else if (type.contains('BaseResponse<dynamic>')) {
-        repository.writeln("data: null,);");
-      } else {
-        final model = names.camelCaseToUnderscore(names.ModelType(type));
-        FileManager.save(
-          "$expectedPath/expected/expected_$model",
-          '{}',
-          extension: 'json',
-        );
-        final decode = "json('expected_$model')";
-        if (type.contains('List')) {
-          repository.writeln("data: List.generate(");
-          repository.writeln("2,");
-          repository.writeln("(index) =>");
-          repository.writeln("$modelType.fromJson($decode),");
-          repository.writeln("));");
+      if (!visitor.isCacheOnly) {
+        repository.writeln("///[${names.firstUpper(methodName)}]");
+        repository.writeln('${methodName}Response = $type(');
+        repository.writeln("message: 'message',");
+        repository.writeln("success: true,");
+        if (varType == 'int' ||
+            varType == 'double' ||
+            varType == 'num' ||
+            varType == 'String' ||
+            varType == 'Map' ||
+            varType == 'bool') {
+          repository
+              .writeln("data: ${methodFormat.initData(varType, 'name')},);");
+        } else if (type.contains('BaseResponse<dynamic>') ||
+            type == 'BaseResponse') {
+          repository.writeln("data: null,);");
         } else {
-          repository.writeln("data: $modelType.fromJson($decode),);");
+          final model = names.camelCaseToUnderscore(names.ModelType(type));
+          FileManager.save(
+            "$expectedPath/expected/expected_$model",
+            '{}',
+            extension: 'json',
+          );
+          final decode = "json('expected_$model')";
+          if (type.contains('List')) {
+            repository.writeln("data: List.generate(");
+            repository.writeln("2,");
+            repository.writeln("(index) =>");
+            repository.writeln("$modelType.fromJson($decode),");
+            repository.writeln("));");
+          } else {
+            repository.writeln("data: $modelType.fromJson($decode),);");
+          }
         }
       }
       if (method.isCache) {
@@ -184,16 +196,18 @@ class RepositoryTestGenerator
 
     for (var method in visitor.useCases) {
       final methodName = method.name;
-      if (method.requestType == RequestType.Fields || !method.hasRequest) {
-        repository.writeln(
-            '$methodName() => dataSource.$methodName(${methodFormat.parametersWithValues(method.parameters)});');
-      } else {
-        final requestName = names.requestName(method.name);
-        final requestType = names.requestType(method.name);
-        repository.writeln(
-            '$requestName = $requestType(${methodFormat.parametersWithValues(method.parameters)});');
-        repository.writeln(
-            '$methodName() => dataSource.$methodName(request: $requestName);');
+      if (!visitor.isCacheOnly) {
+        if (method.requestType == RequestType.Fields || !method.hasRequest) {
+          repository.writeln(
+              '$methodName() => dataSource.$methodName(${methodFormat.parametersWithValues(method.parameters)});');
+        } else {
+          final requestName = names.requestName(method.name);
+          final requestType = names.requestType(method.name);
+          repository.writeln(
+              '$requestName = $requestType(${methodFormat.parametersWithValues(method.parameters)});');
+          repository.writeln(
+              '$methodName() => dataSource.$methodName(request: $requestName);');
+        }
       }
 
       if (method.isCache) {
@@ -214,50 +228,54 @@ class RepositoryTestGenerator
     if (visitor.useCases.isNotEmpty) {
       for (var method in visitor.useCases) {
         final methodName = method.name;
-
-        ///[Function Success Test]
-        repository.writeln("///[$methodName Success Test]");
-        repository.writeln("test('$methodName Success', () async {");
-        repository.writeln("when($methodName())");
-        repository.writeln(
-            ".thenAnswer((realInvocation) async => Right(${methodName}Response));");
-
-        if (method.requestType == RequestType.Fields || !method.hasRequest) {
-          final request = methodFormat.parametersWithValues(method.parameters);
-          repository
-              .writeln("final res = await repository.$methodName($request);");
-        } else {
-          final requestName = names.requestName(method.name);
+        if (!visitor.isCacheOnly) {
+          ///[Function Success Test]
+          repository.writeln("///[$methodName Success Test]");
+          repository.writeln("test('$methodName Success', () async {");
+          repository.writeln("when($methodName())");
           repository.writeln(
-              "final res = await repository.$methodName(request: $requestName);");
-        }
+              ".thenAnswer((realInvocation) async => Right(${methodName}Response));");
 
-        repository.writeln("expect(res.rightOrNull(), ${methodName}Response);");
-        repository.writeln("verify($methodName());");
-        repository.writeln("verifyNoMoreInteractions(dataSource);");
-        repository.writeln("});\n");
+          if (method.requestType == RequestType.Fields || !method.hasRequest) {
+            final request =
+                methodFormat.parametersWithValues(method.parameters);
+            repository
+                .writeln("final res = await repository.$methodName($request);");
+          } else {
+            final requestName = names.requestName(method.name);
+            repository.writeln(
+                "final res = await repository.$methodName(request: $requestName);");
+          }
 
-        ///[Function Failure Test]
-        repository.writeln("///[$methodName Failure Test]");
-        repository.writeln("test('$methodName Failure', () async {");
-        repository.writeln("when($methodName())");
-        repository
-            .writeln(".thenAnswer((realInvocation) async => Left(failure));");
-
-        if (method.requestType == RequestType.Fields || !method.hasRequest) {
-          final request = methodFormat.parametersWithValues(method.parameters);
           repository
-              .writeln("final res = await repository.$methodName($request);");
-        } else {
-          final requestName = names.requestName(method.name);
-          repository.writeln(
-              "final res = await repository.$methodName(request: $requestName);");
-        }
+              .writeln("expect(res.rightOrNull(), ${methodName}Response);");
+          repository.writeln("verify($methodName());");
+          repository.writeln("verifyNoMoreInteractions(dataSource);");
+          repository.writeln("});\n");
 
-        repository.writeln("expect(res.leftOrNull(), isA<Failure>());");
-        repository.writeln("verify($methodName());");
-        repository.writeln("verifyNoMoreInteractions(dataSource);");
-        repository.writeln("});\n");
+          ///[Function Failure Test]
+          repository.writeln("///[$methodName Failure Test]");
+          repository.writeln("test('$methodName Failure', () async {");
+          repository.writeln("when($methodName())");
+          repository
+              .writeln(".thenAnswer((realInvocation) async => Left(failure));");
+
+          if (method.requestType == RequestType.Fields || !method.hasRequest) {
+            final request =
+                methodFormat.parametersWithValues(method.parameters);
+            repository
+                .writeln("final res = await repository.$methodName($request);");
+          } else {
+            final requestName = names.requestName(method.name);
+            repository.writeln(
+                "final res = await repository.$methodName(request: $requestName);");
+          }
+
+          repository.writeln("expect(res.leftOrNull(), isA<Failure>());");
+          repository.writeln("verify($methodName());");
+          repository.writeln("verifyNoMoreInteractions(dataSource);");
+          repository.writeln("});\n");
+        }
 
         ///[Cache Test]
         if (method.isCache) {
@@ -326,6 +344,6 @@ class RepositoryTestGenerator
       repository.toString(),
       allowUpdates: true,
     );
-    return repository.toString();
+    return '';
   }
 }
