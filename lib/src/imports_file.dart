@@ -32,7 +32,7 @@ class Imports {
   }) {
     final names = Names();
     String data = addAndCheck('', "import 'dart:io';\n");
-    data = addAndCheck(data, "import 'package:dartz/dartz.dart';\n");
+    data = addAndCheck(data, "import 'package:eitherx/eitherx.dart';\n");
     data = addAndCheck(data, "import 'package:mwidgets/mwidgets.dart';\n");
     final baseResponse = importName('base_response.dart');
     final noParams = importName('no_params.dart');
