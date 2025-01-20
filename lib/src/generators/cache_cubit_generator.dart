@@ -65,18 +65,18 @@ class CacheCubitGenerator
           getCacheCubit.writeln('$responseType? $varName;');
         }
         getCacheCubit.writeln(
-            '$cacheCubitType(this._$cacheUseCaseName) : super(ContentState());');
+            '$cacheCubitType(this._$cacheUseCaseName) : super(FlowState());');
         getCacheCubit.writeln('void execute() {');
-        getCacheCubit.writeln(
-            'emit(LoadingState(type: StateRendererType.fullScreenLoading));');
+        getCacheCubit
+            .writeln('emit(state.copyWith(type: StateType.loadingPopUp));');
         getCacheCubit.writeln('final res =  _$cacheUseCaseName.execute();');
         getCacheCubit.writeln('res.right((data) {');
         getCacheCubit.writeln('$varName = data;');
         getCacheCubit.writeln('emit(ContentState());');
         getCacheCubit.writeln('});');
         getCacheCubit.writeln('res.left((failure) {');
-        getCacheCubit.writeln('emit(ErrorState(');
-        getCacheCubit.writeln('type: StateRendererType.toastError,');
+        getCacheCubit.writeln('emit(state.copyWith(');
+        getCacheCubit.writeln('type: StateType.errorPopUp,');
         getCacheCubit.writeln('message: failure.message,');
         getCacheCubit.writeln('));');
         getCacheCubit.writeln('});');

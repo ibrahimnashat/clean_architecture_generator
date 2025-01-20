@@ -31,7 +31,7 @@ class Imports {
     bool isUseCase = false,
   }) {
     final names = Names();
-    String data = "import 'package:eitherx/eitherx.dart';\n";
+    String data = "package:dartz/dartz.dart';\n";
     final baseResponse = importName('base_response.dart');
     if (baseResponse != null) data += baseResponse;
     final failure = importName('failure.dart');
@@ -58,7 +58,7 @@ class Imports {
       if (states != null) data += states;
       final fold = importName('fold.dart');
       if (fold != null) data += fold;
-      final stateRenderer = importName('state_renderer.dart');
+      final stateRenderer = importName('flow_state.dart');
       if (stateRenderer != null) data += stateRenderer;
     }
     if (isPaging) {

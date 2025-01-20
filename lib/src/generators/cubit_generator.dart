@@ -83,7 +83,7 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
           cubit.writeln('this.${controller.name},');
         }
         if (hasParams) cubit.writeln('this.request,');
-        cubit.writeln(') : super(ContentState());');
+        cubit.writeln(') : super(FlowState());');
         cubit.writeln('void init() {');
         cubit.writeln(
             'pagewiseController = PagewiseLoadController<$baseModelType>(');
@@ -206,8 +206,8 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
         }
         cubit.writeln(');');
         cubit.writeln('res.left((failure) {');
-        cubit.writeln('emit(ErrorState(');
-        cubit.writeln('type: StateRendererType.toastError,');
+        cubit.writeln('emit(state.copyWith(');
+        cubit.writeln('type: StateType.errorPopUp,');
         cubit.writeln('message: failure.message,');
         cubit.writeln('));');
         cubit.writeln('});');
@@ -229,7 +229,7 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
           cubit.writeln(
               'void set${names.firstUpper(function.name)}(${function.type} value){');
           cubit.writeln('${function.name} = value;');
-          cubit.writeln('emit(ContentState());');
+          cubit.writeln('emit(state.copyWith(type: StateType.none));');
           cubit.writeln('}');
         }
 
@@ -261,7 +261,7 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
         for (var controller in method.textControllers) {
           cubit.writeln('this.${controller.name},');
         }
-        cubit.writeln(') : super(ContentState());\n');
+        cubit.writeln(') : super(FlowState());\n');
 
         ///[initialize var for data when cubit is get request]
         if (hasData) {
@@ -334,8 +334,7 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
           }
         }
 
-        cubit.writeln(
-            'emit(LoadingState(type: StateRendererType.popUpLoading));');
+        cubit.writeln('emit(state.copyWith(type: StateType.loadingPopUp));');
         cubit.writeln(
             'final res = await _${names.firstLower(useCaseType)}.execute(');
 
@@ -368,8 +367,8 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
 
         cubit.writeln(');');
         cubit.writeln('res.left((failure) {');
-        cubit.writeln('emit(ErrorState(');
-        cubit.writeln('type: StateRendererType.toastError,');
+        cubit.writeln('emit(state.copyWith(');
+        cubit.writeln('type: StateType.errorPopUp,');
         cubit.writeln('message: failure.message,');
         cubit.writeln('));');
         cubit.writeln('});');
@@ -380,14 +379,14 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
           cubit.writeln('$varName = data.data!;');
           cubit.writeln('}');
         }
-        cubit.writeln('emit(SuccessState(');
+        cubit.writeln('emit(state.copyWith(');
         cubit.writeln('message: data.message,');
-        cubit.writeln('type: StateRendererType.contentState,');
+        cubit.writeln('type: StateType.success,');
         cubit.writeln('));');
         cubit.writeln('} else {');
-        cubit.writeln('emit(ErrorState(');
+        cubit.writeln('emit(state.copyWith(');
         cubit.writeln('message: data.message,');
-        cubit.writeln('type: StateRendererType.toastError,');
+        cubit.writeln('type: StateType.errorPopUp,');
         cubit.writeln('));');
         cubit.writeln('}');
         cubit.writeln('});');
@@ -400,7 +399,7 @@ class CubitGenerator extends GeneratorForAnnotation<ArchitectureAnnotation> {
           cubit.writeln(
               'void set${names.firstUpper(function.name)}(${function.type} value){');
           cubit.writeln('${function.name} = value;');
-          cubit.writeln('emit(ContentState());');
+          cubit.writeln('emit(state.copyWith(type: StateType.none));');
           cubit.writeln('}');
         }
 
