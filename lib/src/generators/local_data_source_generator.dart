@@ -78,7 +78,6 @@ class LocalDataSourceGenerator
       FileManager.save(
         '$path/$localDataSourceType',
         dataSource.toString(),
-        allowUpdates: true,
         methods: methods,
       );
 
@@ -173,7 +172,6 @@ class LocalDataSourceGenerator
       FileManager.save(
         '$path/$localDataSourceImplName',
         dataSourceImpl.toString(),
-        allowUpdates: true,
         methods: methods,
       );
 

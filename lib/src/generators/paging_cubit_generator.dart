@@ -151,12 +151,12 @@ class PagingCubitGenerator
 
           if (method.hasRequest) {
             cubit.writeln(
-                'Future<$responseType> execute(${methodFormat.parameters(method.parameters)}) async {');
+                'Future<List<$baseModelType>> execute(${methodFormat.parameters(method.parameters)}) async {');
           } else if (method.parameters.isNotEmpty) {
             cubit.writeln(
-                'Future<$responseType> execute({required ${method.parameters.first.type} ${method.parameters.first.name}}) async {');
+                'Future<List<$baseModelType>> execute({required ${method.parameters.first.type} ${method.parameters.first.name}}) async {');
           }
-          cubit.writeln('$responseType $varName = [];');
+          cubit.writeln('List<$baseModelType> $varName = [];');
           if (hasTextController) {
             cubit.writeln('if (formKey.currentState!.validate()) {');
           }

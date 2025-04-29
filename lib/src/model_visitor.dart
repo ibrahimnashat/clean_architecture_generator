@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:clean_architecture_generator/clean_architecture_generator.dart';
 import 'package:clean_architecture_generator/formatter/method_format.dart';
@@ -19,7 +18,7 @@ class ModelVisitor extends GeneralizingElementVisitor<void> {
   final methodFormat = MethodFormat();
 
   @override
-  visitConstructorElement(ConstructorElement element) {
+  visitConstructorElement(element) {
     final returnType = element.returnType.toString();
     final className = returnType.replaceFirst('*', '');
     clientService = "${className}ClientServices";
@@ -29,7 +28,7 @@ class ModelVisitor extends GeneralizingElementVisitor<void> {
   }
 
   @override
-  visitMethodElement(MethodElement element) {
+  visitMethodElement(element) {
     final paths = element.declaration.source
         .toString()
         .replaceAll("/example/", "")
