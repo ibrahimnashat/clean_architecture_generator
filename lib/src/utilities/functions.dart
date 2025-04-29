@@ -4,7 +4,9 @@ import 'package:dart_style/dart_style.dart';
 
 extension StringExtension on String {
   String formatDartCode() {
-    final formatter = DartFormatter();
+    final formatter = DartFormatter(
+      languageVersion: DartFormatter.latestLanguageVersion,
+    );
     return formatter.format(this);
   }
 }

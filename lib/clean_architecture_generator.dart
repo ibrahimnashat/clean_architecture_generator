@@ -72,7 +72,7 @@ Builder generateCleanArchitecture(BuilderOptions options) => SharedPartBuilder(
         CacheCubitTestGenerator(),
       ],
       'clean_architecture',
-      formatOutput: (code) {
-        return '#BUILD DONE SUCCESSFULLY';
+      formatOutput: (code, version) {
+        return '#BUILD DONE SUCCESSFULLY $version';
       },
     );
